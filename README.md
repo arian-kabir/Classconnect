@@ -173,32 +173,4 @@ npm run lint
 next build --no-lint
 ```
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is developed for academic purposes as part of the CSE-471 course.
-
-## 🙏 Acknowledgments
-
-- Next.js team for the amazing framework
-- Vercel for hosting and deployment tools
-- Google Cloud Platform for authentication services
-- Open Library for book data API
-- Excalidraw for the drawing integration
-
-## 📞 Support
-
-For questions or support, please contact:
-- **Course Instructor**: [Instructor Name]
-- **Project Team**: [Team Members]
-
----
-
 **Built with ❤️ by the ClassConnect Team**
