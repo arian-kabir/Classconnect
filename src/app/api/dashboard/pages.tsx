@@ -5,8 +5,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-//import { RoleBasedGuard } from '@/components/auth/RoleBasedGuard';
-//import { DashboardInitializer } from '@/components/dashboard/DashboardInitializer';
+import { RoleBasedGuard } from '@/app/components/auth/RoleBasedGuard';
+import { DashboardInitializer } from '@/app/components/dashboard/DashboardInitializer';
 
 interface DashboardData {
   user: any;
@@ -40,7 +40,7 @@ export default function DashboardPage() {
         setLoading(true);
         const response = await fetch('/api/dashboard', {
           headers: {
-            'Authorization': `Bearer ${session?.user?.id}`,
+            'Authorization': `Bearer ${(session?.user as any)?.id}`,
           },
         });
 
@@ -95,14 +95,8 @@ export default function DashboardPage() {
   }
 
   return (
-    // <RoleBasedGuard 
-    //   permissions={dashboardData.permissions}
-    //   fallback={<div>You don't have permission to access this page.</div>}
-    // >
-    //   <div className="min-h-screen bg-gray-50">
-    //     <DashboardInitializer data={dashboardData} />
-    //     {/* Your dashboard content here */}
-    //   </div>
-    // </RoleBasedGuard>
+    <div className="min-h-screen bg-gray-50">
+      <DashboardInitializer data={dashboardData} />
+    </div>
   );
 }
