@@ -22,104 +22,138 @@ interface ExcalidrawCanvasProps {
 }
 
 const Excalidraw = dynamic(
-  () => import('@excalidraw/excalidraw').then((mod) => mod.Excalidraw),
-  { 
+  () =>
+    import('@excalidraw/excalidraw').then(
+      (mod) => mod.Excalidraw
+    ),
+  {
     ssr: false,
-    loading: () => <div className="p-4 text-gray-500">Loading canvas...</div>
+    loading: () => (
+      <div className="canvas-loading">
+        <div className="notes-spinner" />
+        <p>Loading canvas...</p>
+      </div>
+    ),
   }
 );
 
 import '@excalidraw/excalidraw/index.css';
 
-export default function ExcalidrawCanvas({ 
-  noteId, 
-  userId, 
-  initialContent, 
-  onSave 
+export default function ExcalidrawCanvas({
+  noteId,
+  userId,
+  initialContent,
+  onSave,
 }: ExcalidrawCanvasProps) {
-  const [elements, setElements] = useState<ExcalidrawElement[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [isMounted, setIsMounted] = useState<boolean>(false);
-  const [hasLoaded, setHasLoaded] = useState<boolean>(false);
-  
-  // Tracking current note ID to detect changes
-  const currentNoteIdRef = useRef<number | null>(null);
+  const [elements, setElements] = useState<
+    ExcalidrawElement[]
+  >([]);
 
-  // Handle mounting
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+
+  const [hasLoaded, setHasLoaded] =
+    useState<boolean>(false);
+
+  const [saveMessage, setSaveMessage] =
+    useState<string>('');
+
+  const currentNoteIdRef =
+    useRef<number | null>(null);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Load content when note changes or initialContent updates
   useEffect(() => {
     if (!isMounted) return;
-    
-    // Check if note ID changed
-    const noteChanged = noteId !== currentNoteIdRef.current;
-    
+
+    const noteChanged =
+      noteId !== currentNoteIdRef.current;
+
     if (noteChanged) {
-      console.log(`📝 Switching to note ${noteId}`);
-      
-      // Reset state
       setElements([]);
       setHasLoaded(false);
-      
-      // Load new content
+      setSaveMessage('');
+
       if (initialContent) {
         try {
-          const parsed = typeof initialContent === 'string' 
-            ? JSON.parse(initialContent) 
-            : initialContent;
-          
-          const loadedElements = parsed?.elements || [];
+          const parsed =
+            typeof initialContent === 'string'
+              ? JSON.parse(initialContent)
+              : initialContent;
+
+          const loadedElements =
+            parsed?.elements || [];
+
           setElements(loadedElements);
           setHasLoaded(true);
-          console.log(`Loaded ${loadedElements.length} elements for note ${noteId}`);
         } catch (error) {
-          console.error('Error parsing content:', error);
+          console.error(
+            'Error parsing content:',
+            error
+          );
+
           setElements([]);
           setHasLoaded(true);
         }
       } else {
-        // No content, start with empty canvas
         setHasLoaded(true);
       }
-      
-      // Update ref
+
       currentNoteIdRef.current = noteId;
     }
   }, [noteId, initialContent, isMounted]);
 
-  // Handle save - only save current canvas, don't create new note
   const handleSave = async (): Promise<void> => {
     if (!noteId) {
-      console.error('❌ No note ID');
+      console.error('No note ID');
       return;
     }
-    
+
     setLoading(true);
+    setSaveMessage('');
+
     try {
-      console.log(`💾 Saving note ${noteId} with ${elements.length} elements`);
-      
-      const response = await fetch(`/api/notes/${noteId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: userId,
-          content: { type: 'excalidraw', elements }
-        })
-      });
-      
+      const response = await fetch(
+        `/api/notes/${noteId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userId,
+            content: {
+              type: 'excalidraw',
+              elements,
+            },
+          }),
+        }
+      );
+
       const data = await response.json();
-      
+
       if (data.success) {
-        console.log(' Save successful');
+        setSaveMessage('Saved successfully');
+
         onSave(data.data);
+
+        window.setTimeout(() => {
+          setSaveMessage('');
+        }, 2500);
       } else {
-        console.error('Save failed:', data.error);
+        console.error(
+          'Save failed:',
+          data.error
+        );
+
+        setSaveMessage('Unable to save');
       }
     } catch (error) {
       console.error('Save error:', error);
+      setSaveMessage('Unable to save');
     } finally {
       setLoading(false);
     }
@@ -127,29 +161,96 @@ export default function ExcalidrawCanvas({
 
   if (!isMounted) {
     return (
-      <div className="flex items-center justify-center h-full bg-gray-50">
-        <p className="text-gray-500">Loading canvas...</p>
+      <div className="canvas-loading">
+        <div className="notes-spinner" />
+        <p>Loading canvas...</p>
       </div>
     );
   }
 
   return (
-    <div className="relative h-full w-full border rounded-lg overflow-hidden bg-white">
-      {/* Force re-render with key when note changes */}
-      <div className="h-full w-full" key={`canvas-${noteId}`}>
-        <Excalidraw
-          key={noteId || 'empty'}
-          initialData={{ elements }}
-          onChange={setElements}/>
-      </div>
-      
-      <button
-        onClick={handleSave}
-        disabled={loading || !noteId}
-        className="absolute bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 shadow-lg z-10"
+    <div className="excalidraw-container">
+      <div
+        className="excalidraw-surface"
+        key={`canvas-${noteId}`}
       >
-        {loading ? 'Saving...' : '💾 Save Canvas'}
-      </button>
+        {hasLoaded && (
+          <Excalidraw
+            key={noteId || 'empty'}
+            initialData={{
+              elements,
+            }}
+            onChange={setElements}
+          />
+        )}
+      </div>
+
+      <div className="canvas-bottom-bar">
+        <div className="canvas-save-info">
+          {saveMessage ? (
+            <>
+              <span
+                className={`save-status-icon ${
+                  saveMessage === 'Saved successfully'
+                    ? 'save-success'
+                    : 'save-error'
+                }`}
+              >
+                {saveMessage ===
+                'Saved successfully'
+                  ? '✓'
+                  : '!'}
+              </span>
+
+              <span>{saveMessage}</span>
+            </>
+          ) : (
+            <>
+              <span className="canvas-hint-dot" />
+              <span>
+                Changes are saved manually
+              </span>
+            </>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={
+            loading ||
+            !noteId ||
+            !hasLoaded
+          }
+          className="canvas-save-button"
+        >
+          {loading ? (
+            <>
+              <span className="save-button-spinner" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+                <path d="M17 21v-8H7v8" />
+                <path d="M7 3v5h8" />
+              </svg>
+
+              Save
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

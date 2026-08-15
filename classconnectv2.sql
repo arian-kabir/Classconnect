@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 --
 -- Database: `classconnect_db`
 --
-CREATE DATABASE IF NOT EXISTS `classconnect_dbv2`;
+CREATE DATABASE IF NOT EXISTS `classconnect_db`;
 USE `classconnect_db`;
 
 -- --------------------------------------------------------
