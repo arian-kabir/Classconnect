@@ -139,8 +139,8 @@ export default function ExcalidrawCanvas({
       <div className="h-full w-full" key={`canvas-${noteId}`}>
         <Excalidraw
           key={noteId || 'empty'}
-          initialData={{ elements }}
-          onChange={setElements}/>
+          initialData={{ elements: elements as any }}
+          onChange={setElements as any}/>
       </div>
       
       <button

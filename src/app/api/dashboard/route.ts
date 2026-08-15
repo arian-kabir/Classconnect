@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const userId = parseInt(session.user.id);
+    const userId = parseInt((session.user as any).id);
     const user = await UserQueries.getUserById(userId);
     
     if (!user) {
