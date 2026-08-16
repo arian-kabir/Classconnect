@@ -195,9 +195,74 @@ export default function NotesPage() {
                   }`}
                 >
                   <div className="note-card-main">
-                    <div className="note-card-icon">
-                      ✎
-                    </div>
+                    <button className="workspace-note-icon"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+
+                        const newTitle = prompt(
+                          'Enter a new title:',
+                          note.title
+                        );
+
+                        if (!newTitle || newTitle.trim() === note.title) {
+                          return;
+                        }
+
+                        try {
+                          const res = await fetch(`/api/notes/${note.id}`, {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              userId,
+                              title: newTitle.trim(),
+                            }),
+                          });
+
+                          const data = await res.json();
+
+                          if (data.success) {
+                            setNotes((currentNotes) =>
+                              currentNotes.map((n) =>
+                                n.id === note.id
+                                  ? { ...n, title: newTitle.trim() }
+                                  : n
+                              )
+                            );
+
+                            if (selectedNote?.id === note.id) {
+                              setSelectedNote({
+                                ...selectedNote,
+                                title: newTitle.trim(),
+                              });
+                            }
+                          } else {
+                            console.error('Rename failed:', data.error);
+                          }
+                        } catch (error) {
+                          console.error('Rename error:', error);
+                        }
+                      }}
+                      className="edit-note-button"
+                      aria-label={`Edit title of ${note.title}`}
+                      title="Edit note title"
+                    > ✎
+                      {/* <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                      </svg> */}
+                    </button>
+                    
 
                     <div className="note-card-content">
                       <div className="note-card-title">
@@ -205,15 +270,15 @@ export default function NotesPage() {
                       </div>
 
                       <div className="note-card-date">
-                        {new Date(
-                          note.updated_at
-                        ).toLocaleDateString(undefined, {
+                        {new Date(note.updated_at).toLocaleDateString(undefined, {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
                         })}
                       </div>
                     </div>
+
+                    
                   </div>
 
                   <button
