@@ -10,7 +10,7 @@ export async function query(sql, params = []) {
         host: process.env.DB_HOST || 'localhost',
         user: process.env.DB_USER || 'root',
         password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'classconnect',
+        database: process.env.DB_NAME || 'classconnect_db',
         port: parseInt(process.env.DB_PORT || '3306'),
         waitForConnections: true,
         connectionLimit: 10,
@@ -18,8 +18,11 @@ export async function query(sql, params = []) {
       });
     }
 
-    const [rows] = await pool.execute(sql, params);
-    return rows;
+    // Use pool.query for universal compatibility and extract the first element (rows)
+    const [rows] = await pool.query(sql, params);
+    
+    // Defensive normalization: guarantee an array is always returned
+    return Array.isArray(rows) ? rows : [];
   } catch (error) {
     console.error('Database query error:', error);
     throw error;
@@ -32,7 +35,7 @@ export async function getConnection() {
       host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'classconnect',
+      database: process.env.DB_NAME || 'classconnect_db',
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
