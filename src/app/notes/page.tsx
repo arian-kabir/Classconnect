@@ -195,7 +195,7 @@ export default function NotesPage() {
                   }`}
                 >
                   <div className="note-card-main">
-                    <button className="workspace-note-icon"
+                    <button className="note-card-icon"
                       onClick={async (e) => {
                         e.stopPropagation();
 
