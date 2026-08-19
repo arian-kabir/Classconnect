@@ -1,4 +1,4 @@
-echo "# Dependencies
+# Dependencies
 node_modules/
 .next/
 out/
@@ -6,9 +6,12 @@ dist/
 build/
 
 # Environment files
-# .env
-# .env.local
-# .env*.local
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
 *.log
@@ -27,4 +30,4 @@ Thumbs.db
 *.swo
 
 # Misc
-*.map" > .gitignore
+*.map
