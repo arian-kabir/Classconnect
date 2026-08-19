@@ -91,5 +91,6 @@ export const config = {
     '/lecturer/:path*',
     '/tutor/:path*',
     '/api/auth/:path*',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

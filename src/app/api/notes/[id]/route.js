@@ -7,9 +7,9 @@ export async function GET(request, { params }) {
     try {
         // IMPORTANT: In Next.js App Router, params is a Promise
         const { id } = await params;
-        
+
         console.log('GET Single Note - ID:', id);
-        
+
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');
 
@@ -83,9 +83,9 @@ export async function PUT(request, { params }) {
     try {
         // IMPORTANT: In Next.js App Router, params is a Promise
         const { id } = await params;
-        
+
         console.log('PUT Single Note - ID:', id);
-        
+
         const body = await request.json();
         console.log('Request body:', body);
 
@@ -169,10 +169,10 @@ export async function PUT(request, { params }) {
             SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         `;
-        
+
         console.log('Update SQL:', updateSql);
         console.log('Update Params:', updateParams);
-        
+
         await query(updateSql, updateParams);
 
         // Fetch updated note
@@ -190,7 +190,7 @@ export async function PUT(request, { params }) {
             FROM notes n
             WHERE n.id = ?
         `;
-        
+
         const updatedNote = await query(fetchSql, [noteId]);
 
         return NextResponse.json({
@@ -216,9 +216,9 @@ export async function DELETE(request, { params }) {
     try {
         // IMPORTANT: In Next.js App Router, params is a Promise
         const { id } = await params;
-        
+
         console.log('DELETE Single Note - ID:', id);
-        
+
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');
         const permanent = searchParams.get('permanent') === 'true';

@@ -1,3 +1,4 @@
+// backend/next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -16,16 +17,26 @@ const nextConfig = {
       },
     ],
   },
-  
-  // Other valid options
   typescript: {
     ignoreBuildErrors: false,
   },
-  
-  // Environment variables
   env: {
     NEXT_PUBLIC_APP_URL: process.env.NEXTAUTH_URL,
   },
-}
+  // Add CORS for frontend
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          { key: 'Access-Control-Allow-Origin', value: 'http://localhost:3000' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+        ],
+      },
+    ];
+  },
+};
 
-export default nextConfig
+export default nextConfig;
