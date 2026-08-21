@@ -492,6 +492,9 @@ CREATE TABLE `note_shares` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+/*Later additions to the database */
+ALTER TABLE users
+MODIFY password_hash VARCHAR(255) NULL;
 
 COMMIT;
 

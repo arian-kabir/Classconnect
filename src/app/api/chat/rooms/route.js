@@ -16,7 +16,7 @@ export async function GET(request) {
         
         // Get all chat rooms for a user (sections they're enrolled in or teaching)
         const [rooms] = await pool.query(`
-            SELECT DISTINCT 
+        SELECT DISTINCT 
                 cr.room_id,
                 cr.room_name,
                 cr.section_id,
@@ -48,6 +48,7 @@ export async function GET(request) {
             WHERE se.student_id = ? OR s.teacher_id = ?
             ORDER BY last_message_time DESC
         `, [userId, userId, userId]);
+        
 
         return NextResponse.json(rooms);
     } catch (error) {
