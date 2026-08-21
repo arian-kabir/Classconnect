@@ -27,8 +27,8 @@ const publicRoutes = [
 ];
 
 export default withAuth(
-  function proxy(req: NextRequest) {
-    const token = req.nextauth.token;
+  function proxy(req: any) {
+    const token = req.nextauth?.token;
     const path = req.nextUrl.pathname;
 
     // Check if route is protected

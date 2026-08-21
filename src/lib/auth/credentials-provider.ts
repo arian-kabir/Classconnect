@@ -13,7 +13,7 @@ interface User {
 export async function authenticateUser(email: string, password: string) {
   try {
     // Find user by email
-    const users = await query<User[]>(
+    const users: any = await query(
       'SELECT user_id, email, full_name, role, password_hash FROM users WHERE email = ?',
       [email]
     );

@@ -581,6 +581,55 @@ CREATE TABLE IF NOT EXISTS `section_staff` (
 
 -- --------------------------------------------------------
 
+--
+-- Schema additions for: Contextual Student Routine Builder & Study Scheduler
+-- (Module 3 — Faria Fairooz Zahan)
+--
+
+--
+-- Table structure for table `study_sessions`
+--
+CREATE TABLE IF NOT EXISTS `study_sessions` (
+  `session_id`        INT PRIMARY KEY AUTO_INCREMENT,
+  `user_id`           INT NOT NULL,
+  `course_id`         INT DEFAULT NULL,
+  `title`             VARCHAR(255) NOT NULL,
+  `description`       TEXT DEFAULT NULL,
+  `day_of_week`       ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+  `start_time`        TIME NOT NULL,
+  `end_time`          TIME NOT NULL,
+  `session_date`      DATE DEFAULT NULL,
+  `priority`          ENUM('low','medium','high','urgent') DEFAULT 'medium',
+  `status`            ENUM('scheduled','completed','skipped') DEFAULT 'scheduled',
+  `duration_minutes`  INT DEFAULT 60,
+  `color_tag`         VARCHAR(20) DEFAULT '#002626',
+  `created_at`        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`course_id`) REFERENCES `courses`(`course_id`) ON DELETE SET NULL,
+  INDEX `idx_user_day` (`user_id`, `day_of_week`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Table structure for table `reminders`
+--
+CREATE TABLE IF NOT EXISTS `reminders` (
+  `reminder_id`        INT PRIMARY KEY AUTO_INCREMENT,
+  `user_id`            INT NOT NULL,
+  `entity_type`        ENUM('assignment','study_session','custom') NOT NULL,
+  `entity_id`          INT DEFAULT NULL,
+  `title`              VARCHAR(255) NOT NULL,
+  `message`            TEXT DEFAULT NULL,
+  `due_at`             DATETIME NOT NULL,
+  `alert_offset_hours` INT DEFAULT 24,
+  `is_dismissed`       BOOLEAN DEFAULT FALSE,
+  `is_read`            BOOLEAN DEFAULT FALSE,
+  `created_at`         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+  INDEX `idx_user_alerts` (`user_id`, `is_dismissed`, `due_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

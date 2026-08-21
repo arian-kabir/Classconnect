@@ -184,12 +184,71 @@ async function migrate() {
     console.log('[WARN] Seed step notice:', seedErr.message);
   }
 
+  // ── 11. Module 3: Create study_sessions table ─────────────────────────────
+  await conn.query(`
+    CREATE TABLE IF NOT EXISTS \`study_sessions\` (
+      \`session_id\`        INT PRIMARY KEY AUTO_INCREMENT,
+      \`user_id\`           INT NOT NULL,
+      \`course_id\`         INT DEFAULT NULL,
+      \`title\`             VARCHAR(255) NOT NULL,
+      \`description\`       TEXT DEFAULT NULL,
+      \`day_of_week\`       ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+      \`start_time\`        TIME NOT NULL,
+      \`end_time\`          TIME NOT NULL,
+      \`session_date\`      DATE DEFAULT NULL,
+      \`priority\`          ENUM('low','medium','high','urgent') DEFAULT 'medium',
+      \`status\`            ENUM('scheduled','completed','skipped') DEFAULT 'scheduled',
+      \`duration_minutes\`  INT DEFAULT 60,
+      \`color_tag\`         VARCHAR(20) DEFAULT '#002626',
+      \`created_at\`        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`user_id\`) ON DELETE CASCADE,
+      FOREIGN KEY (\`course_id\`) REFERENCES \`courses\`(\`course_id\`) ON DELETE SET NULL,
+      INDEX \`idx_user_day\` (\`user_id\`, \`day_of_week\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+  console.log('[OK]   study_sessions table ready');
+
+  // ── 12. Module 3: Create reminders table ──────────────────────────────────
+  await conn.query(`
+    CREATE TABLE IF NOT EXISTS \`reminders\` (
+      \`reminder_id\`        INT PRIMARY KEY AUTO_INCREMENT,
+      \`user_id\`            INT NOT NULL,
+      \`entity_type\`        ENUM('assignment','study_session','custom') NOT NULL,
+      \`entity_id\`          INT DEFAULT NULL,
+      \`title\`              VARCHAR(255) NOT NULL,
+      \`message\`            TEXT DEFAULT NULL,
+      \`due_at\`             DATETIME NOT NULL,
+      \`alert_offset_hours\` INT DEFAULT 24,
+      \`is_dismissed\`       BOOLEAN DEFAULT FALSE,
+      \`is_read\`            BOOLEAN DEFAULT FALSE,
+      \`created_at\`         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`user_id\`) ON DELETE CASCADE,
+      INDEX \`idx_user_alerts\` (\`user_id\`, \`is_dismissed\`, \`due_at\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+  console.log('[OK]   reminders table ready');
+
+  // ── 13. Module 3: Seed initial dynamic deadline reminders ────────────────
+  try {
+    // Seed dynamic reminders for upcoming assignment deadlines
+    await conn.query(`
+      INSERT IGNORE INTO reminders 
+      (reminder_id, user_id, entity_type, entity_id, title, message, due_at, alert_offset_hours, is_dismissed)
+      VALUES
+      (1, 1, 'assignment', 1, 'CS101: Programming Assignment 1', 'Factorial calculation in Python due soon. Complete submission box review.', DATE_ADD(NOW(), INTERVAL 18 HOUR), 24, FALSE),
+      (2, 1, 'assignment', 2, 'CSE471: Architecture Assignment 2', 'Complete System Analysis & Design module documentation.', DATE_ADD(NOW(), INTERVAL 42 HOUR), 48, FALSE)
+    `);
+    console.log('[OK]   Sample deadline reminders seeded');
+  } catch (seedErr) {
+    console.log('[WARN] Seed Module 3 notice:', seedErr.message);
+  }
+
   await conn.end();
-  console.log('\n✅ All migrations complete.');
+  console.log('\\n✅ All migrations complete.');
 }
 
 migrate().catch((e) => {
-  console.error('\n❌ Migration FAILED:', e.message);
+  console.error('\\n❌ Migration FAILED:', e.message);
   process.exit(1);
 });
 
