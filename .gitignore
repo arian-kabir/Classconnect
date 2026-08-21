@@ -31,3 +31,10 @@ Thumbs.db
 
 # Misc
 *.map
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Google Service Account credentials (never commit!)
+config/*.json
+!config/package*.json
+*.json.key

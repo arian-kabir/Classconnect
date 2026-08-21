@@ -2,16 +2,19 @@ import { NextResponse } from 'next/server';
 // @ts-ignore - Bypassing JS strict mode for database module
 import db from '@/lib/db/db';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const userId = 1; // Default user ID for isolated testing
+    const { searchParams } = new URL(req.url);
+    const userIdParam = searchParams.get('userId');
+    const userId = userIdParam ? parseInt(userIdParam, 10) : 1;
 
-    // FIXED: Do not destructure [rows] since db.query already returns the normalized array
-    const rows = await db.query(`
+    // 1. Try fetching user-specific routines
+    let rows: any[] = await db.query(`
       SELECT 
         r.routine_id, r.day_of_week, r.start_time, r.end_time, r.room_number,
         c.course_code, c.course_name, 
-        s.section_code
+        s.section_code,
+        r.source
       FROM routines r
       JOIN sections s ON r.section_id = s.section_id
       JOIN courses c ON s.course_id = c.course_id
@@ -20,6 +23,28 @@ export async function GET() {
         FIELD(r.day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'),
         r.start_time
     `, [userId]);
+
+    // 2. If no user-specific routines, return all master section schedules synced from intake
+    if (!rows || rows.length === 0) {
+      rows = await db.query(`
+        SELECT 
+          ss.schedule_id AS routine_id, 
+          ss.day_of_week, 
+          ss.start_time, 
+          ss.end_time, 
+          ss.room_number,
+          c.course_code, 
+          c.course_name, 
+          s.section_code,
+          'spreadsheet' AS source
+        FROM section_schedules ss
+        JOIN sections s ON ss.section_id = s.section_id
+        JOIN courses c ON s.course_id = c.course_id
+        ORDER BY 
+          FIELD(ss.day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'),
+          ss.start_time
+      `);
+    }
 
     return NextResponse.json(Array.isArray(rows) ? rows : [], { status: 200 });
   } catch (error) {
