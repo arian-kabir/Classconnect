@@ -1,4 +1,4 @@
-echo "# Dependencies
+# Dependencies
 node_modules/
 .next/
 out/
@@ -6,9 +6,25 @@ dist/
 build/
 
 # Environment files
-# .env
-# .env.local
-# .env*.local
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local# Dependencies
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Environment files
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
 *.log
@@ -27,4 +43,23 @@ Thumbs.db
 *.swo
 
 # Misc
-*.map" > .gitignore
+*.map
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+*.map

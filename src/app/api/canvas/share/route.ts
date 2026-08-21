@@ -1,4 +1,4 @@
-// backend/src/app/api/notes/share/route.js
+// backend/src/app/api/canvas/share/route.js
 import { query } from '@/lib/db/db';
 import { NextResponse } from 'next/server';
 

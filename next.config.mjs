@@ -1,4 +1,3 @@
-// backend/next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -21,26 +20,29 @@ const nextConfig = {
       config.externals = [...config.externals, 'bufferutil', 'utf-8-validate'];
       return config;
     },
+
   typescript: {
     ignoreBuildErrors: false,
   },
+
   env: {
     NEXT_PUBLIC_APP_URL: process.env.NEXTAUTH_URL,
   },
-  // Add CORS for frontend
+
+  // Allow cross-origin requests from the frontend (http://localhost:3000)
   async headers() {
     return [
       {
         source: '/api/:path*',
         headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
           { key: 'Access-Control-Allow-Origin', value: 'http://localhost:3000' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
         ],
       },
     ];
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

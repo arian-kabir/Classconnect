@@ -1,11 +1,11 @@
-// app/api/notes/route.js
+// app/api/canvas/route.js
 import { query } from '@/lib/db/db';
 import { NextResponse } from 'next/server';
 
 // GET: Fetch all notes for a user
 export async function GET(request) {
     try {
-        console.log('=== GET /api/notes called ===');
+        console.log('=== GET /api/canvas called ===');
         
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');
@@ -186,7 +186,7 @@ export async function POST(request) {
         }, { status: 201 });
 
     } catch (error) {
-        console.error('ERROR in POST /api/notes:', error);
+        console.error('ERROR in POST /api/canvas:', error);
         return NextResponse.json(
             { 
                 success: false, 

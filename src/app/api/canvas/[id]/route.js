@@ -1,4 +1,4 @@
-// app/api/notes/[id]/route.js
+// app/api/canvas/[id]/route.js
 import { query } from '@/lib/db/db';
 import { NextResponse } from 'next/server';
 
