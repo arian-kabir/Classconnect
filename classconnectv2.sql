@@ -496,6 +496,94 @@ CREATE TABLE `note_shares` (
 ALTER TABLE users
 MODIFY password_hash VARCHAR(255) NULL;
 
+--
+-- Schema additions for: Automated External Spreadsheet Routine Intake
+-- (Module 1 — Faria Fairooz Zahan)
+--
+
+-- Add teacher initials lookup column to users
+ALTER TABLE `users`
+  ADD COLUMN IF NOT EXISTS `initials` VARCHAR(10) DEFAULT NULL COMMENT 'Teacher initials matching spreadsheet (e.g. AQU, MSMA)';
+
+-- Track whether a routine row came from manual entry or spreadsheet sync
+ALTER TABLE `routines`
+  ADD COLUMN IF NOT EXISTS `source` ENUM('manual','spreadsheet') DEFAULT 'manual',
+  ADD COLUMN IF NOT EXISTS `spreadsheet_row_ref` INT DEFAULT NULL COMMENT '1-based row index in the source spreadsheet';
+
+-- Unique constraint enabling idempotent UPSERT
+ALTER TABLE `routines`
+  ADD UNIQUE KEY IF NOT EXISTS `uq_user_section_day` (`user_id`, `section_id`, `day_of_week`);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `section_schedules`
+-- Master schedule populated from the university spreadsheet.
+-- One row per section+day+timeslot. Students' routines are fanned out from here.
+--
+CREATE TABLE IF NOT EXISTS `section_schedules` (
+  `schedule_id`         INT PRIMARY KEY AUTO_INCREMENT,
+  `section_id`          INT NOT NULL,
+  `day_of_week`         ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+  `start_time`          TIME NOT NULL,
+  `end_time`            TIME NOT NULL,
+  `room_number`         VARCHAR(30) DEFAULT 'TBA',
+  `teacher_id`          INT DEFAULT NULL,
+  `spreadsheet_row_ref` INT DEFAULT NULL,
+  `last_synced_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at`          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`section_id`) REFERENCES `sections`(`section_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`teacher_id`) REFERENCES `users`(`user_id`) ON DELETE SET NULL,
+  UNIQUE KEY `uq_section_day_start` (`section_id`, `day_of_week`, `start_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `routine_intake_log`
+-- Audit log of every spreadsheet sync run.
+--
+CREATE TABLE IF NOT EXISTS `routine_intake_log` (
+  `log_id`          INT PRIMARY KEY AUTO_INCREMENT,
+  `spreadsheet_id`  VARCHAR(255),
+  `sheet_range`     VARCHAR(100),
+  `total_raw_rows`  INT DEFAULT 0,
+  `inserted`        INT DEFAULT 0,
+  `updated`         INT DEFAULT 0,
+  `skipped`         INT DEFAULT 0,
+  `warnings_count`  INT DEFAULT 0,
+  `errors_count`    INT DEFAULT 0,
+  `ran_at`          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Schema additions for: Cross-Role Section Staffing & Allocation Ledger
+-- (Module 2 — Faria Fairooz Zahan)
+--
+
+ALTER TABLE `sections`
+  ADD COLUMN IF NOT EXISTS `section_type` ENUM('LECTURE', 'LAB', 'TUTORIAL', 'COMBINED') DEFAULT 'LECTURE';
+
+--
+-- Table structure for table `section_staff`
+-- Maps primary instructors, teaching assistants, lab assistants, and student tutors to sections.
+--
+CREATE TABLE IF NOT EXISTS `section_staff` (
+  `allocation_id` INT PRIMARY KEY AUTO_INCREMENT,
+  `section_id`    INT NOT NULL,
+  `user_id`       INT NOT NULL,
+  `role_type`     ENUM('primary_instructor', 'teaching_assistant', 'lab_assistant', 'student_tutor') NOT NULL,
+  `assigned_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `assigned_by`   INT DEFAULT NULL,
+  FOREIGN KEY (`section_id`) REFERENCES `sections`(`section_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+  UNIQUE KEY `uq_section_user_role` (`section_id`, `user_id`, `role_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

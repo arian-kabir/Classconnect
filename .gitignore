@@ -44,6 +44,7 @@ Thumbs.db
 
 # Misc
 *.map
+<<<<<<< HEAD
 
 # Logs
 *.log
@@ -63,3 +64,12 @@ Thumbs.db
 
 # Misc
 *.map
+=======
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Google Service Account credentials (never commit!)
+config/*.json
+!config/package*.json
+*.json.key
+>>>>>>> c308fe7984d96468a34359a12d2ffd0efc656077

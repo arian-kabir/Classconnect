@@ -18,11 +18,8 @@ export async function query(sql, params = []) {
       });
     }
 
-    // Use pool.query for universal compatibility and extract the first element (rows)
     const [rows] = await pool.query(sql, params);
-    
-    // Defensive normalization: guarantee an array is always returned
-    return Array.isArray(rows) ? rows : [];
+    return rows;
   } catch (error) {
     console.error('Database query error:', error);
     throw error;
